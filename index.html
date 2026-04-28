@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="title">Memory Telepon</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0A1128;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        main {
+            height: 100vh;
+            overflow-y:hidden;
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+        section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            padding: 1rem;
+            height: 100vh;
+        }
+        .info {
+            background:rgba(0, 123, 255, 0.1);
+            border: 2px solid #0035ff;
+            color: #90a6ff;
+            border-radius: 8px;
+            text-align: left;
+            padding: 10px;
+            font-size: 12px;
+            }
+
+        .border {
+            display: grid;
+            align-content: space-around;
+            justify-content: center;
+
+            padding: 1.2rem;
+            background: #0A1128;
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            max-height: 500px;
+            height: 100%;
+            border: 2px solid #00E5FF;
+            border-radius: 20px;
+        }
+        nav {
+            padding: 20px;
+        }
+        input, select {
+            margin: 10px 0 0 0;
+            background: #0A1128;
+            border-radius: 10px;
+            padding: 8px;
+            color: #fff;
+            border: 2px solid #2F80ED;
+            &:disabled  {
+                background: #ffffff1e;
+            }
+        }
+        
+        button {
+            margin: 10px 0 0 0;
+            cursor:pointer;
+            color: #fff;
+            border-radius: 10px;
+            border: 1px solid #00E5FF;
+            background: #2F80ED;
+            padding: 8px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- start  -->
+    <main id="main">
+
+        <!-- Start -->
+        <section id="section-start">
+            <div class="border">
+                <nav>
+                    <h1>Test Memory Telepon</h1>
+                </nav>
+
+
+                <span id="random-number">0821-2568-9760</span>
+
+                <select name="time" id="time">
+                    <option value="59">1 Menit</option>
+                    <option value="119">2 Menit</option>
+                    <option value="299">5 Menit</option>
+                    <option value="599">10 Menit</option>
+                    <option value="1199">20 Menit</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="time" id="set_time" step="1" style="display: none;" disabled>
+                <button id="btn-start" onclick="startTest() ">Mulai</button>
+                
+                <span class="info">
+                    Latih daya ingatmu dengan simulasi nomor telepon acak. Uji seberapa lama angka-angka itu menetap di pikiran tanpa alat bantu.
+                </span>
+            </div>
+        </section>
+        <!-- Proses  -->
+        
+        <section id="section-test">
+            <div class="border">
+                <h1 id="timer-display">00:00</h1>
+                <span class="info">
+                    tauhkah kamu.
+                    kamu bisa menggunakan bantuan tangan atau badan mu untuk mencatat di dalam pikiran mu.
+                </span>
+            </div>
+        </section>
+        
+        <!-- Cek -->
+        <section id="section-cek">
+            <div class="border">
+                <h1 id="timer-display">Masukan Nomor</h1>
+                <input type="number" id="input-cek" disabled>
+                <button id="btn_check" onclick="validasiJawaban()">Periksa jawaban</button>
+                <span class="info" id="Info">
+                   Uji memorimu: Tuliskan angka pertama yang muncul di pikiranmu
+                </span>
+            </div>
+        </section>
+        
+        <!-- hasil -->
+        <section id="section-hasil">
+            <div class="border">
+                <h1 id="output"></h1>
+                <p id="score">Poin: 0</p>
+                <button id="btn-next">Coba Lagi</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+// valiabel
+let poin = 0;
+let timer;
+
+const selectElement = document.getElementById("time");
+const inputCustomTime = document.getElementById("set_time");
+
+// random number 
+function generatePhoneNumber() {
+    const getRandomDigits = (len) => Array.from({length: len}, () => Math.floor(Math.random() * 10)).join('');
+    
+    // Format: 08xx-xxxx-xxxx
+    nomorTarget = `08${getRandomDigits(2)}-${getRandomDigits(4)}-${getRandomDigits(4)}`;
+    
+    document.getElementById("random-number").innerText = nomorTarget;
+}
+generatePhoneNumber()
+
+selectElement.addEventListener('input', () => {
+
+    let val = selectElement.value;
+
+    let processedValue = !isNaN(val) ? parseInt(val) : val;
+
+
+    if (selectElement.value === "custom") {
+        const timeVal = inputCustomTime.value; // Outputnya: "HH:MM:SS"
+        inputCustomTime.style.display = "block";
+        inputCustomTime.disabled = false;
+        inputCustomTime.placeholder = "masukan detik : 10";
+        
+        console.log("display true");
+        
+        if (timeVal) {
+            const parts = timeVal.split(':');
+            
+            let jam = 0, menit = 0, detik = 0;
+
+            if (parts.length === 3) {
+                // Jika formatnya HH:MM:SS
+                jam = parseInt(parts[0]);
+                menit = parseInt(parts[1]);
+                detik = parseInt(parts[2]);
+            } else if (parts.length === 2) {
+                // Jaga-jaga jika browser tertentu hanya mengirim HH:MM
+                jam = parseInt(parts[0]);
+                menit = parseInt(parts[1]);
+            }
+
+            totalDetik = (jam * 3600) + (menit * 60) + detik;
+        }
+    } else {
+        inputCustomTime.disabled = true;
+        inputCustomTime.style.display = "none";
+        inputCustomTime.value = "";
+        console.log("display false");
+    } 
+    
+    console.log("Tipe Data:", typeof processedValue, "| Nilai:", processedValue);
+});
+
+// Start Button
+document.getElementById('btn-start').addEventListener('click', () => {
+    startTest(); 
+    document.getElementById('section-test').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center'
+    });
+});
+
+// Next Button
+document.getElementById('btn-next').addEventListener("click", () => {
+    generatePhoneNumber()
+    document.getElementById("input-cek").disabled = true;
+
+    document.getElementById('section-start').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center'
+    });
+});
+
+
+// start time 
+function startTest() {
+    const display = document.getElementById('timer-display');
+    const startBtn = document.getElementById('btn-start');
+    const selectTime = document.getElementById('time');
+    const customTimeInput = document.getElementById('set_time');
+
+    document.getElementById("random-number").innerText = "08xx-xxxx-xxxx";
+    
+    let totalDetik = 0;
+
+    if (selectTime.value === "custom") {
+
+        const timeVal = customTimeInput.value; 
+        
+        if (timeVal) {
+            const [jam, menit] = timeVal.split(':');
+
+            totalDetik = (parseInt(jam) * 3600) + (parseInt(menit) * 60);
+        }
+    } else {
+        totalDetik = parseInt(selectTime.value);
+    }
+
+    if (isNaN(totalDetik) || totalDetik <= 0) {
+        alert("Pilih waktu terlebih dahulu!");
+        return;
+    }
+
+    clearInterval(timer);
+    // startBtn.disabled = true;
+    // startBtn.innerText = "Berjalan...";
+
+    timer = setInterval(() => {
+        let h = Math.floor(totalDetik / 3600);
+        let m = Math.floor((totalDetik % 3600) / 60);
+        let s = totalDetik % 60;
+
+        let formatWaktu = h > 0 
+            ? `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+            : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+        display.innerText = formatWaktu;
+        document.getElementById("title").innerText = `Tes Memory ${formatWaktu}`;
+        if (totalDetik <= 0) {
+            clearInterval(timer);
+            startBtn.disabled = false;
+            startBtn.innerText = "Mulai Lagi";
+            display.innerText = "Waktu Habis!";
+            
+            setTimeout(() => {
+                display.innerText = "00:00";
+            }, 10000);
+
+            document.getElementById("input-cek").disabled = false;
+            document.getElementById('section-cek').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center'
+            });
+        }
+        totalDetik--;
+    }, 1000);
+}
+
+// menjawab
+function validasiJawaban() {
+
+    const inputUserRaw = document.getElementById("input-cek").value; 
+    const nomorTargetRaw = document.getElementById("random-number").innerText;
+
+    const inputBersih = inputUserRaw.replace(/\D/g, "");
+    const targetBersih = nomorTargetRaw.replace(/\D/g, "");
+
+    const outputElemen = document.getElementById("output");
+    const scoreElemen = document.getElementById("score");
+
+    if (inputBersih === targetBersih && inputBersih !== "") {
+        outputElemen.innerText = "Kamu Benar!";
+        outputElemen.style.color = "#00C853"; 
+        document.getElementById('section-hasil').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+        });
+        poin += 1;
+        scoreElemen.innerText = `Poin: ${poin}`
+    } else {
+        outputElemen.innerText = "kamu Gagal!";
+        outputElemen.style.color = "#FF4444";
+        document.getElementById('section-hasil').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+        });
+        poin -= 1;
+        scoreElemen.innerText = `Poin: ${poin}`
+    }
+}
+
+
+    </script>
+</body>
+</html>
